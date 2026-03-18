@@ -1,43 +1,54 @@
-import json
 from http.server import HTTPServer
 from nss_handler import HandleRequests, status
-
-# import sql handling functions from views
-
-# Add your imports below this line
 from views import login_user
+from views.register import handle_register
 
-# GET, PUT, DELETE, POST functions to send data values and requests to sql
+
 class JSONServer(HandleRequests):
 
     def do_GET(self):
-        """Handle GET requests from a client"""
-
         response_body = ""
         url = self.parse_url(self.path)
-        
+
         if url["requested_resource"] == "users":
             query_params = url["query_params"]
             if "username" in query_params and "password" in query_params:
-                username = query_params["username"][0]
-                password = query_params["password"][0]
                 credentials = {
-                    "username": username,
-                    "password": password
+                    "username": query_params["username"][0],
+                    "password": query_params["password"][0],
                 }
                 response_body = login_user(credentials)
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
-        else:
-            return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
-        
+        return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
+    def do_POST(self):
+        url = self.parse_url(self.path)
+
+        if url["requested_resource"] == "register":
+            handle_register(self)
+        else:
+            self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
+
+    def do_OPTIONS(self):
+        url = self.parse_url(self.path)
+
+        if url["requested_resource"] == "register":
+            handle_register(self)
+        else:
+            self.send_response(200)
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type")
+            self.end_headers()
 
 
 def main():
-    host = ''
-    port = 8000
+    host = ""
+    port = 8088
+    print(f"🚀 Server running on port {port}")
     HTTPServer((host, port), JSONServer).serve_forever()
+
 
 if __name__ == "__main__":
     main()
