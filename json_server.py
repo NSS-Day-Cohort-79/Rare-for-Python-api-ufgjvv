@@ -17,6 +17,7 @@ class JSONServer(HandleRequests):
         url = self.parse_url(self.path)
         
         if url["requested_resource"] == "users":
+            print(url)
             query_params = url["query_params"]
             if "username" in query_params and "password" in query_params:
                 username = query_params["username"][0]
@@ -36,7 +37,7 @@ class JSONServer(HandleRequests):
 
 def main():
     host = ''
-    port = 8000
+    port = 8088
     HTTPServer((host, port), JSONServer).serve_forever()
 
 if __name__ == "__main__":
