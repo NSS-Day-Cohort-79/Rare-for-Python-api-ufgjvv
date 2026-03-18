@@ -7,9 +7,9 @@
         {
             "name": "Python: Request Handler",
             "type": "python",
-            "request": "launch",
-            "program": "database.py",
-            "console": "integratedTerminal"
-        }
+"request": "launch",
+"program": "database.py",
+"console": "integratedTerminal"
+        }  
     ]
 }
