@@ -11,6 +11,7 @@ class JSONServer(HandleRequests):
         url = self.parse_url(self.path)
 
         if url["requested_resource"] == "users":
+            print(url)
             query_params = url["query_params"]
             if "username" in query_params and "password" in query_params:
                 credentials = {
