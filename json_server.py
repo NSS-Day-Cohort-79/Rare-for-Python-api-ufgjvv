@@ -30,23 +30,11 @@ class JSONServer(HandleRequests):
         else:
             self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
-    def do_OPTIONS(self):
-        url = self.parse_url(self.path)
-
-        if url["requested_resource"] == "register":
-            handle_register(self)
-        else:
-            self.send_response(200)
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-            self.send_header("Access-Control-Allow-Headers", "Content-Type")
-            self.end_headers()
-
 
 def main():
-    host = ""
+    host = "127.0.0.1"
     port = 8088
-    print(f"🚀 Server running on port {port}")
+    print(f"🚀 Server running on {host}:{port}")
     HTTPServer((host, port), JSONServer).serve_forever()
 
 
