@@ -1,6 +1,6 @@
 from http.server import HTTPServer
 from nss_handler import HandleRequests, status
-from views import login_user
+from views import login_user, get_categories, get_tags
 from views.register import handle_register
 
 
@@ -22,7 +22,12 @@ class JSONServer(HandleRequests):
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
         elif url["requested_resource"] == "categories":
-            print(url)
+            response_body = get_categories()
+            return self.response(response_body, status.HTTP_200_SUCCESS.value)
+
+        elif url["requested_resource"] == "tags":
+            response_body = get_tags()
+            return self.response(response_body, status.HTTP_200_SUCCESS.value)
             
 
         return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
