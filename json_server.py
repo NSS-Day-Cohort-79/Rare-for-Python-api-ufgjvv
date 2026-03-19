@@ -21,6 +21,10 @@ class JSONServer(HandleRequests):
                 response_body = login_user(credentials)
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
+        elif url["requested_resource"] == "categories":
+            print(url)
+            
+
         return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
     def do_POST(self):
