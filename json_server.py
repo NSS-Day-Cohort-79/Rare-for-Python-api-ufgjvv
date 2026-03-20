@@ -1,5 +1,6 @@
 from http.server import HTTPServer
 from nss_handler import HandleRequests, status
+import json
 from views import login_user, get_categories, get_tags, post_post
 from views.register import handle_register
 
@@ -35,11 +36,15 @@ class JSONServer(HandleRequests):
     def do_POST(self):
         url = self.parse_url(self.path)
 
+        content_len = int(self.headers.get('content-length', 0))
+        request_body = self.rfile.read(content_len)
+        request_body = json.loads(request_body)
+
         if url["requested_resource"] == "register":
             handle_register(self)
 
         elif url["requested_resource"] == "posts":
-            response_body = post_post()
+            response_body = post_post(request_body)
             return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
         
         else:
