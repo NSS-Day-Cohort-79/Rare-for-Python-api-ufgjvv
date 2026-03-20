@@ -2,6 +2,8 @@ from http.server import HTTPServer
 from nss_handler import HandleRequests, status
 from views import login_user
 from views.register import handle_register
+from views.category import create_category
+import json
 
 
 class JSONServer(HandleRequests):
@@ -28,6 +30,17 @@ class JSONServer(HandleRequests):
 
         if url["requested_resource"] == "register":
             handle_register(self)
+        elif url["requested_resource"] == "categories":
+            content_length = int(self.headers.get('content-length', 0))
+            request_body= self.rfile.read(content_length)
+            request_data = json.loads(request_body)
+
+            if not request_data.get('name', '').strip():
+                return self.response(
+                    json.dumps({'message': 'Category name is required.'}),
+                    status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value
+                )
+            self.response(create_category(request_data), status.HTTP_201_SUCCESS_CREATED.value)
         else:
             self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
