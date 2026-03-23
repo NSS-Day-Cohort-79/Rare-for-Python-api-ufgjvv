@@ -1,9 +1,8 @@
 from http.server import HTTPServer
 from nss_handler import HandleRequests, status
 import json
-from views import login_user, get_categories, get_tags, post_post
+from views import login_user, get_categories, get_tags, post_post, create_category
 from views.register import handle_register
-from views.category import create_category
 import json
 
 

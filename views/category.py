@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import sqlite3
 import json
 from datetime import datetime
@@ -21,7 +20,6 @@ def get_categories():
         # Serialize Python list to JSON encoded string
         serialized_categories = json.dumps(categories)
         return serialized_categories
-=======
 import sqlite3 
 import json
 
@@ -48,4 +46,3 @@ def create_category(category):
             'id': id,
             'label': category['name']
         })
->>>>>>> develop
