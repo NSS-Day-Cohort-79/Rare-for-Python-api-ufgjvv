@@ -3,6 +3,9 @@ from nss_handler import HandleRequests, status
 from views import login_user
 from views.register import handle_register
 
+# --- IMPORT ADDED FOR COMMENT CREATION (TICKET #7) ---
+from views.comment import create_comment
+
 
 class JSONServer(HandleRequests):
 
@@ -28,8 +31,18 @@ class JSONServer(HandleRequests):
 
         if url["requested_resource"] == "register":
             handle_register(self)
+
+        # --- NEW ENDPOINT FOR COMMENT CREATION (TICKET #7) ---
+        elif url["requested_resource"] == "comments":
+            request_body = self.parse_json_body()
+            response_body = create_comment(request_body)
+            return self.response(response_body, status.HTTP_201_SUCCESS.value)
+
+        # --- FIX: RETURN RESPONSE FOR UNKNOWN POST REQUESTS (TICKET #7) ---
         else:
-            self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
+            return self.response(
+                "", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value
+            )
 
 
 def main():
