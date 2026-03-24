@@ -1,7 +1,7 @@
 from http.server import HTTPServer
 from nss_handler import HandleRequests, status
 import json
-from views import login_user, get_categories, get_tags, post_post, create_category, get_user_posts
+from views import login_user, get_categories, get_tags, post_post, create_category, get_user_posts, create_user
 from views.register import handle_register
 import json
 
@@ -56,7 +56,8 @@ class JSONServer(HandleRequests):
         request_body = json.loads(request_body)
 
         if url["requested_resource"] == "register":
-            handle_register(self)
+            response_body = create_user(request_body)
+            return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
 
         elif url["requested_resource"] == "posts":
             response_body = post_post(request_body)
