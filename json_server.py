@@ -1,43 +1,75 @@
-import json
 from http.server import HTTPServer
 from nss_handler import HandleRequests, status
+import json
+from views import login_user, get_categories, get_tags, post_post, create_category
+from views.register import handle_register
+import json
 
-# import sql handling functions from views
 
-# Add your imports below this line
-from views import login_user
-
-# GET, PUT, DELETE, POST functions to send data values and requests to sql
 class JSONServer(HandleRequests):
 
     def do_GET(self):
-        """Handle GET requests from a client"""
-
         response_body = ""
         url = self.parse_url(self.path)
-        
+
         if url["requested_resource"] == "users":
+            print(url)
             query_params = url["query_params"]
             if "username" in query_params and "password" in query_params:
-                username = query_params["username"][0]
-                password = query_params["password"][0]
                 credentials = {
-                    "username": username,
-                    "password": password
+                    "username": query_params["username"][0],
+                    "password": query_params["password"][0],
                 }
                 response_body = login_user(credentials)
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
-        else:
-            return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
-        
+        elif url["requested_resource"] == "categories":
+            response_body = get_categories()
+            return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
+        elif url["requested_resource"] == "tags":
+            response_body = get_tags()
+            return self.response(response_body, status.HTTP_200_SUCCESS.value)
+            print(url)
+            
+
+        return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
+
+    def do_POST(self):
+        url = self.parse_url(self.path)
+
+        content_len = int(self.headers.get('content-length', 0))
+        request_body = self.rfile.read(content_len)
+        request_body = json.loads(request_body)
+
+        if url["requested_resource"] == "register":
+            handle_register(self)
+
+        elif url["requested_resource"] == "posts":
+            response_body = post_post(request_body)
+            return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
+        
+        elif url["requested_resource"] == "categories":
+            content_length = int(self.headers.get('content-length', 0))
+            request_body= self.rfile.read(content_length)
+            request_data = json.loads(request_body)
+
+            if not request_data.get('name', '').strip():
+                return self.response(
+                    json.dumps({'message': 'Category name is required.'}),
+                    status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value
+                )
+            self.response(create_category(request_data), status.HTTP_201_SUCCESS_CREATED.value)
+        else:
+            self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
 
 def main():
-    host = ''
-    port = 8000
+    host = "127.0.0.1"
+    port = 8088
+    print(f"🚀 Server running on {host}:{port}")
     HTTPServer((host, port), JSONServer).serve_forever()
+
 
 if __name__ == "__main__":
     main()
