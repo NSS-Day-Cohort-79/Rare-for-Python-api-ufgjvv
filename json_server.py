@@ -1,7 +1,9 @@
 from http.server import HTTPServer
 from nss_handler import HandleRequests, status
-from views import login_user
+import json
+from views import login_user, get_categories, get_tags, post_post, create_category
 from views.register import handle_register
+import json
 
 # --- IMPORT ADDED FOR COMMENT CREATION (TICKET #7) ---
 from views.comment import create_comment
@@ -24,21 +26,50 @@ class JSONServer(HandleRequests):
                 response_body = login_user(credentials)
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
+        elif url["requested_resource"] == "categories":
+            response_body = get_categories()
+            return self.response(response_body, status.HTTP_200_SUCCESS.value)
+
+        elif url["requested_resource"] == "tags":
+            response_body = get_tags()
+            return self.response(response_body, status.HTTP_200_SUCCESS.value)
+            print(url)
+
         return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
     def do_POST(self):
         url = self.parse_url(self.path)
+
+        content_len = int(self.headers.get("content-length", 0))
+        request_body = self.rfile.read(content_len)
+        request_body = json.loads(request_body)
 
         if url["requested_resource"] == "register":
             handle_register(self)
 
         # --- NEW ENDPOINT FOR COMMENT CREATION (TICKET #7) ---
         elif url["requested_resource"] == "comments":
-            request_body = self.parse_json_body()
             response_body = create_comment(request_body)
             return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
 
         # --- FIX: RETURN RESPONSE FOR UNKNOWN POST REQUESTS (TICKET #7) ---
+        elif url["requested_resource"] == "posts":
+            response_body = post_post(request_body)
+            return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
+
+        elif url["requested_resource"] == "categories":
+            content_length = int(self.headers.get("content-length", 0))
+            request_body = self.rfile.read(content_length)
+            request_data = json.loads(request_body)
+
+            if not request_data.get("name", "").strip():
+                return self.response(
+                    json.dumps({"message": "Category name is required."}),
+                    status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
+                )
+            self.response(
+                create_category(request_data), status.HTTP_201_SUCCESS_CREATED.value
+            )
         else:
             return self.response(
                 "", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value
