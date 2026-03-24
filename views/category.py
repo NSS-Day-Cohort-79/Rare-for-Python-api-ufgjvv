@@ -8,7 +8,7 @@ def get_categories():
         db_cursor = conn.cursor()
 
         db_cursor.execute("""
-        SELECT * FROM categories
+        SELECT * FROM categories ORDER BY label ASC
         """)
         query_results = db_cursor.fetchall()
 
