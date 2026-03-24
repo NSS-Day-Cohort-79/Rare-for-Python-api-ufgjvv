@@ -36,7 +36,7 @@ class JSONServer(HandleRequests):
         elif url["requested_resource"] == "comments":
             request_body = self.parse_json_body()
             response_body = create_comment(request_body)
-            return self.response(response_body, status.HTTP_201_SUCCESS.value)
+            return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
 
         # --- FIX: RETURN RESPONSE FOR UNKNOWN POST REQUESTS (TICKET #7) ---
         else:
