@@ -90,7 +90,7 @@ INSERT INTO Tags ('label') VALUES ('JavaScript');
 INSERT INTO Reactions ('label', 'image_url') VALUES ('happy', 'https://pngtree.com/so/happy');
 
 INSERT INTO Users ('username', 'password') VALUES ('johnsmith', 'johnsmith123');
-INSERT INTO Users ('first_name', 'last_name', 'email', 'username', 'password');
+
 
 INSERT INTO Categories ('label') VALUES ('Sports');
 INSERT INTO Categories ('label') VALUES ('Politics');
