@@ -8,7 +8,7 @@
             "name": "Python: Request Handler",
             "type": "debugpy",
 "request": "launch",
-"program": "workspaces/PythonFullStack/Rare-for-Python-api-ufgjvv/json_server.py",
+"program": "json_server.py",
 "console": "integratedTerminal"
         }  
     ]
