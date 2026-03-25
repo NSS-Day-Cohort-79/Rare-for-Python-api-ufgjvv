@@ -1,20 +1,17 @@
 from http.server import HTTPServer
 import json
-import nss_handler
-from views import login_user, get_categories, get_tags, post_post, create_category
+from views import login_user, get_categories, get_tags, post_post, create_category, get_user_posts, create_user
 from views.register import handle_register
-import json
 
 
 class JSONServer(nss_handler.HandleRequests):
 
     def do_GET(self):
-        response_body = ""
         url = self.parse_url(self.path)
 
         if url["requested_resource"] == "users":
-            print(url)
             query_params = url["query_params"]
+
             if "username" in query_params and "password" in query_params:
                 credentials = {
                     "username": query_params["username"][0],
@@ -38,9 +35,21 @@ class JSONServer(nss_handler.HandleRequests):
             )
             print(url)
 
-        return self.response(
-            "", nss_handler.status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value
-        )
+        elif url["requested_resource"] == "posts":
+            print(url)
+            query_params = url["query_params"]
+            dict_list = query_params.values()
+            list_of_values = list(dict_list)
+            if "user_id" in query_params:
+                user = list_of_values[0]
+                response_body = get_user_posts(url, user[0])
+                return self.response(response_body, status.HTTP_200_SUCCESS.value)
+
+                
+
+            
+
+        return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
     def do_POST(self):
         url = self.parse_url(self.path)
@@ -49,9 +58,12 @@ class JSONServer(nss_handler.HandleRequests):
         request_body = self.rfile.read(content_len)
         request_body = json.loads(request_body)
 
+        # ✅ REGISTER
         if url["requested_resource"] == "register":
-            handle_register(self)
+            response_body = create_user(request_body)
+            return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
 
+        # ✅ POSTS
         elif url["requested_resource"] == "posts":
             response_body = post_post(request_body)
             return self.response(
