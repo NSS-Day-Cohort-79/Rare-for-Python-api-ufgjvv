@@ -1,8 +1,10 @@
 from http.server import HTTPServer
-from nss_handler import HandleRequests, status
 import json
+from nss_handler import HandleRequests, status
 from views import login_user, get_categories, get_tags, post_post, create_category
 from views.register import handle_register
+from views import login_user, get_categories, get_tags, post_post, create_category, get_posts, get_single_post
+from views.posttag import add_post_tags
 import json
 
 
@@ -31,8 +33,14 @@ class JSONServer(HandleRequests):
             response_body = get_tags()
             return self.response(response_body, status.HTTP_200_SUCCESS.value)
             print(url)
-            
 
+        elif url["requested_resource"] == "posts":
+            if url["pk"] != 0:
+                response_body = get_single_post(url["pk"])
+            else:
+                response_body = get_posts()
+            return self.response(response_body, status.HTTP_200_SUCCESS.value)
+        
         return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
     def do_POST(self):
@@ -60,6 +68,10 @@ class JSONServer(HandleRequests):
                     status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value
                 )
             self.response(create_category(request_data), status.HTTP_201_SUCCESS_CREATED.value)
+
+        elif url["requested_resource"] == "post_tags":
+            self.response(add_post_tags(request_body), status.HTTP_201_SUCCESS_CREATED.value)
+
         else:
             self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
