@@ -1,6 +1,6 @@
 from http.server import HTTPServer
 import json
-from views import login_user, get_categories, get_tags, post_post, create_category, get_user_posts, create_user
+from views import login_user, get_categories, get_tags, post_post, create_category, get_user_posts, create_user, get_posts
 from views.register import handle_register
 
 
@@ -44,7 +44,9 @@ class JSONServer(nss_handler.HandleRequests):
                 user = list_of_values[0]
                 response_body = get_user_posts(url, user[0])
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
-
+            else:
+                response_body = get_posts(url)
+                return self.response(response_body, status.HTTP_200_SUCCESS.value)
                 
 
             
