@@ -57,7 +57,9 @@ def get_user_posts(post_data, user):
                 JOIN categories c ON p.category_id = c.id
                 WHERE p.user_id = ?
                 ORDER BY p.id DESC
-                """, (user,))
+                """,
+                    (user,),
+                )
                 query_results = db_cursor.fetchall()
         else:
             pass
