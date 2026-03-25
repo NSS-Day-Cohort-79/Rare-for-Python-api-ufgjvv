@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import sqlite3
 import json
 
@@ -103,3 +104,13 @@ def delete_tag(tag_id):
         return cursor.rowcount > 0
     finally:
         conn.close()
+=======
+from models.tag import create_tag
+import json
+
+
+def handle_tags_request(method, body):
+    if method == "POST":
+        new_tag = json.loads(body)
+        return create_tag(new_tag)
+>>>>>>> develop
