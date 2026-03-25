@@ -45,6 +45,7 @@ def get_user_posts(post_data, user):
             if user:
                 db_cursor.execute("""
                 SELECT
+                    p.id,
                     p.title,
                     p.publication_date,
                     p.image_url,
@@ -55,6 +56,7 @@ def get_user_posts(post_data, user):
                 JOIN users u ON p.user_id = u.id
                 JOIN categories c ON p.category_id = c.id
                 WHERE p.user_id = ?
+                ORDER BY p.id DESC
                 """, (user,))
                 query_results = db_cursor.fetchall()
         else:
