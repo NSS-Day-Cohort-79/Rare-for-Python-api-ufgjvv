@@ -3,6 +3,16 @@ from nss_handler import HandleRequests, status
 import json
 from views import login_user, get_categories, get_tags, post_post, create_category
 from views.posts import get_single_post  # ✅ ADDED IMPORT
+from views import (
+    login_user,
+    get_categories,
+    get_tags,
+    post_post,
+    create_category,
+    get_user_posts,
+    create_user,
+    get_posts,
+)
 from views.register import handle_register
 import json
 
@@ -38,6 +48,18 @@ class JSONServer(HandleRequests):
             if url["pk"] is not None:
                 response_body = get_single_post(url["pk"])
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
+        elif url["requested_resource"] == "posts":
+            print(url)
+            query_params = url["query_params"]
+            dict_list = query_params.values()
+            list_of_values = list(dict_list)
+            if "user_id" in query_params:
+                user = list_of_values[0]
+                response_body = get_user_posts(url, user[0])
+                return self.response(response_body, status.HTTP_200_SUCCESS.value)
+            else:
+                response_body = get_posts(url)
+                return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
         return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
@@ -49,7 +71,8 @@ class JSONServer(HandleRequests):
         request_body = json.loads(request_body)
 
         if url["requested_resource"] == "register":
-            handle_register(self)
+            response_body = create_user(request_body)
+            return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
 
         elif url["requested_resource"] == "posts":
             response_body = post_post(request_body)
