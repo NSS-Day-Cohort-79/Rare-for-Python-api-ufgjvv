@@ -83,8 +83,6 @@ def get_user_posts(post_data, user):
         serialized_posts = json.dumps(posts)
 
     return serialized_posts
-<<<<<<< HEAD
-=======
 
 def get_posts(post_data):
     with sqlite3.connect("./db.sqlite3") as conn:
@@ -118,4 +116,3 @@ def get_posts(post_data):
 
     return serialized_posts
 
->>>>>>> 0ab2f1d85cdd8a6d71cb10e6f6abf52d12f2a37e

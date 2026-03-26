@@ -11,11 +11,13 @@ from views import (
     get_posts,
     update_category,
     get_category,
+    delete_category,
 )
+from nss_handler import HandleRequests, status
 import json
 
 
-class JSONServer(nss_handler.HandleRequests):
+class JSONServer(HandleRequests):
 
     def do_GET(self):
         url = self.parse_url(self.path)
@@ -30,7 +32,7 @@ class JSONServer(nss_handler.HandleRequests):
                 }
                 response_body = login_user(credentials)
                 return self.response(
-                    response_body, nss_handler.status.HTTP_200_SUCCESS.value
+                    response_body, status.HTTP_200_SUCCESS.value
                 )
 
         elif url["requested_resource"] == "categories":
@@ -42,13 +44,13 @@ class JSONServer(nss_handler.HandleRequests):
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
             response_body = get_categories()
             return self.response(
-                response_body, nss_handler.status.HTTP_200_SUCCESS.value
+                response_body, status.HTTP_200_SUCCESS.value
             )
 
         elif url["requested_resource"] == "tags":
             response_body = get_tags()
             return self.response(
-                response_body, nss_handler.status.HTTP_200_SUCCESS.value
+                response_body, status.HTTP_200_SUCCESS.value
             )
             print(url)
 
@@ -83,7 +85,7 @@ class JSONServer(nss_handler.HandleRequests):
         elif url["requested_resource"] == "posts":
             response_body = post_post(request_body)
             return self.response(
-                response_body, nss_handler.status.HTTP_201_SUCCESS_CREATED.value
+                response_body, status.HTTP_201_SUCCESS_CREATED.value
             )
 
         elif url["requested_resource"] == "categories":
@@ -98,7 +100,7 @@ class JSONServer(nss_handler.HandleRequests):
             )
         else:
             return self.response(
-                "", nss_handler.status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value
+                "", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value
             )
 
     def do_PUT(self):
@@ -116,6 +118,19 @@ class JSONServer(nss_handler.HandleRequests):
                     status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
                 )
             self.response(update_category(request_body), status.HTTP_200_SUCCESS.value)
+
+    def do_DELETE(self):
+        url = self.parse_url(self.path)
+        pk = url["pk"]
+
+        if url["requested_resource"] == "categories":
+            if pk != 0:
+                successfully_deleted = delete_category(pk)
+                if successfully_deleted:
+                    return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
+
+        else:
+            return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
 
 def main():
