@@ -89,4 +89,69 @@ def get_single_post(pk):
 
         post['tags'] = [dict(row) for row in db_cursor.fetchall()]
 
-        return json.dumps(post) 
+def get_user_posts(post_data, user):
+    with sqlite3.connect("./db.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        if post_data:
+            if user:
+                db_cursor.execute("""
+                SELECT
+                    p.id,
+                    p.title,
+                    p.publication_date,
+                    p.image_url,
+                    u.first_name,
+                    u.last_name,
+                    c.label
+                FROM posts p
+                JOIN users u ON p.user_id = u.id
+                JOIN categories c ON p.category_id = c.id
+                WHERE p.user_id = ?
+                ORDER BY p.id DESC
+                """, (user,))
+                query_results = db_cursor.fetchall()
+        else:
+            pass
+
+        posts = []
+        for row in query_results:
+            posts.append(dict(row))
+
+        serialized_posts = json.dumps(posts)
+
+    return serialized_posts
+
+def get_posts(post_data):
+    with sqlite3.connect("./db.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        if post_data:
+                db_cursor.execute("""
+                SELECT
+                    p.id,
+                    p.title,
+                    p.publication_date,
+                    p.image_url,
+                    u.first_name,
+                    u.last_name,
+                    c.label
+                FROM posts p
+                JOIN users u ON p.user_id = u.id
+                JOIN categories c ON p.category_id = c.id
+                ORDER BY p.id DESC
+                """)
+                query_results = db_cursor.fetchall()
+        else:
+            pass
+
+        posts = []
+        for row in query_results:
+            posts.append(dict(row))
+
+        serialized_posts = json.dumps(posts)
+
+    return serialized_posts
+
