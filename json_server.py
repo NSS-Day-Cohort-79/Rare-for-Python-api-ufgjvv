@@ -1,7 +1,7 @@
 from http.server import HTTPServer
 from nss_handler import HandleRequests, status
 import json
-from views import login_user, get_categories, get_tags, post_post, create_category, get_user_posts, create_user, update_post
+from views import login_user, get_categories, get_tags, post_post, create_category, get_user_posts, create_user, update_post, get_single_post
 from views.register import handle_register
 import json
 
@@ -35,9 +35,12 @@ class JSONServer(HandleRequests):
         elif url["requested_resource"] == "posts":
             print(url)
             query_params = url["query_params"]
-            dict_list = query_params.values()
-            list_of_values = list(dict_list)
-            if "user_id" in query_params:
+            if url["pk"] !=0:
+                response_body = get_single_post(url["pk"])
+                return self.response(response_body, status.HTTP_200_SUCCESS.value)
+            elif "user_id" in query_params:
+                dict_list = query_params.values()
+                list_of_values = list(dict_list)
                 user = list_of_values[0]
                 response_body = get_user_posts(url, user[0])
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)

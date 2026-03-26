@@ -59,6 +59,25 @@ def update_post(id, post):
         return json.dumps({"success": True})
 
 
+def get_single_post(id):
+    with sqlite3.connect("./db.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+                        SELECT
+                          p.id,
+                          p.title,
+                          p.content,
+                          p.image_url,
+                          p.category_id,
+                          p.publication_date,
+                          p.approved
+                        FROM Posts p
+                        WHERE p.id = ?
+                    """, (id,))
+        row = db_cursor.fetchone()
+        return json.dumps(dict(row))
 
 def get_user_posts(post_data, user):
     with sqlite3.connect("./db.sqlite3") as conn:
