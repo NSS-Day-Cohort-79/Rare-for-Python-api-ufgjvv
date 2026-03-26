@@ -40,7 +40,7 @@ class JSONServer(nss_handler.HandleRequests):
         elif url["requested_resource"] == "tags":
             response_body = get_tags()
             return self.response(
-                response_body, nss_handler.status.HTTP_200_SUCCESS.value
+                json.dumps(response_body), nss_handler.status.HTTP_200_SUCCESS.value
             )
 
         elif url["requested_resource"] == "posts":
