@@ -15,7 +15,7 @@ from views import (
 import json
 
 
-class JSONServer(nss_handler.HandleRequests):
+class JSONServer(HandleRequests):
 
     def do_GET(self):
         url = self.parse_url(self.path)
@@ -30,7 +30,7 @@ class JSONServer(nss_handler.HandleRequests):
                 }
                 response_body = login_user(credentials)
                 return self.response(
-                    response_body, nss_handler.status.HTTP_200_SUCCESS.value
+                    response_body, status.HTTP_200_SUCCESS.value
                 )
 
         elif url["requested_resource"] == "categories":
@@ -42,13 +42,13 @@ class JSONServer(nss_handler.HandleRequests):
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
             response_body = get_categories()
             return self.response(
-                response_body, nss_handler.status.HTTP_200_SUCCESS.value
+                response_body, status.HTTP_200_SUCCESS.value
             )
 
         elif url["requested_resource"] == "tags":
             response_body = get_tags()
             return self.response(
-                response_body, nss_handler.status.HTTP_200_SUCCESS.value
+                response_body, status.HTTP_200_SUCCESS.value
             )
             print(url)
 
@@ -83,7 +83,7 @@ class JSONServer(nss_handler.HandleRequests):
         elif url["requested_resource"] == "posts":
             response_body = post_post(request_body)
             return self.response(
-                response_body, nss_handler.status.HTTP_201_SUCCESS_CREATED.value
+                response_body, status.HTTP_201_SUCCESS_CREATED.value
             )
 
         elif url["requested_resource"] == "categories":
@@ -98,7 +98,7 @@ class JSONServer(nss_handler.HandleRequests):
             )
         else:
             return self.response(
-                "", nss_handler.status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value
+                "", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value
             )
 
     def do_PUT(self):
