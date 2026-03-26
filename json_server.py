@@ -72,9 +72,9 @@ class JSONServer(HandleRequests):
         
         elif url["requested_resource"] == "categories":
 
-            if not request_body.get('name', '').strip():
+            if not request_body.get('label', '').strip():
                 return self.response(
-                    json.dumps({'message': 'Category name is required.'}),
+                    json.dumps({'message': 'Category label is required.'}),
                     status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value
                 )
             self.response(create_category(request_body), status.HTTP_201_SUCCESS_CREATED.value)
@@ -90,7 +90,7 @@ class JSONServer(HandleRequests):
 
         if url["requested_resource"] == "categories":
 
-            if not request_body.get('name', '').strip():
+            if not request_body.get('label', '').strip():
                 return self.response(
                     json.dumps({'message': 'Category name is required.'}),
                     status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value

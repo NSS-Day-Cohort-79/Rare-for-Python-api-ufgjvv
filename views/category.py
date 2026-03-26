@@ -32,12 +32,14 @@ def get_category(pk):
                 label
             FROM categories
             WHERE id = ?
-        """, (int(pk),))
+        """, (pk,))
 
         query_result = db_cursor.fetchone()
 
-        return json.dumps(query_result)
+        if query_result is None:
+            return json.dumps(None)
 
+        return json.dumps(dict(query_result))
 
 
 def create_category(category):
@@ -55,13 +57,13 @@ def create_category(category):
  
         db_cursor.execute("""
             INSERT INTO Categories (label) VALUES (?)
-        """, (category['name'],))
+        """, (category['label'],))
  
         id = db_cursor.lastrowid
  
         return json.dumps({
             'id': id,
-            'label': category['name']
+            'label': category['label']
         })
 
 def update_category(category):
