@@ -28,13 +28,37 @@ def post_post(post):
             tag_id = db_cursor.fetchone()[0]
 
             db_cursor.execute("""
-        INSERT INTO posttags ('post_id', 'tag_id') 
+            INSERT INTO posttags ('post_id', 'tag_id') 
                               VALUES (?, ?)   
-        """, (post_id, tag_id))
+            """, (post_id, tag_id))
             
-        conn.commit()
+    conn.commit()
+    return json.dumps({"success": True})
 
+def update_post(id, post):
+    with sqlite3.connect("./db.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+            UPDATE Posts
+            SET title = ?,
+                content = ?,
+                category_id = ?,
+                image_url = ?
+            WHERE id = ?
+        """,(
+                post["title"],
+                post["content"],
+                post["category_id"],
+                post["image_url"],
+                id
+        ))
+        
+        conn.commit()
         return json.dumps({"success": True})
+
+
 
 def get_user_posts(post_data, user):
     with sqlite3.connect("./db.sqlite3") as conn:
