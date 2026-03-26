@@ -92,7 +92,7 @@ class JSONServer(HandleRequests):
 
             if not request_body.get('label', '').strip():
                 return self.response(
-                    json.dumps({'message': 'Category name is required.'}),
+                    json.dumps({'message': 'Category label is required.'}),
                     status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value
                 )
             self.response(update_category(request_body), status.HTTP_200_SUCCESS.value)
