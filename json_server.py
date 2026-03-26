@@ -11,7 +11,9 @@ from views import (
     get_posts,
     update_category,
     get_category,
+    delete_category,
 )
+from nss_handler import HandleRequests, status
 import json
 
 
@@ -116,6 +118,19 @@ class JSONServer(HandleRequests):
                     status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
                 )
             self.response(update_category(request_body), status.HTTP_200_SUCCESS.value)
+
+    def do_DELETE(self):
+        url = self.parse_url(self.path)
+        pk = url["pk"]
+
+        if url["requested_resource"] == "categories":
+            if pk != 0:
+                successfully_deleted = delete_category(pk)
+                if successfully_deleted:
+                    return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
+
+        else:
+            return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
 
 def main():
