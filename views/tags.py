@@ -1,6 +1,4 @@
 import sqlite3
-import json
-import nss_handler
 
 
 DATABASE = "db.sqlite3"
