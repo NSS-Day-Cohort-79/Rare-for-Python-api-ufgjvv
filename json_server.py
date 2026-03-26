@@ -90,9 +90,14 @@ class JSONServer(nss_handler.HandleRequests):
             request_body = self.rfile.read(content_length)
             request_data = json.loads(request_body)
 
-            if not request_data.get("name", "").strip():
+        elif url["requested_resource"] == "tags":
+            content_length = int(self.headers.get("content-length", 0))
+            request_body = self.rfile.read(content_length)
+            request_data = json.loads(request_body)
+
+            if not request_data.get("label", "").strip():
                 return self.response(
-                    json.dumps({"message": "Category name is required."}),
+                    json.dumps({"message": "Tag label is required."}),
                     nss_handler.status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
                 )
             self.response(
