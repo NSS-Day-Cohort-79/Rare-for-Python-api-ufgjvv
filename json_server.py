@@ -2,29 +2,18 @@ from http.server import HTTPServer
 from nss_handler import HandleRequests, status
 import json
 from views import login_user, get_categories, get_tags, post_post, create_category
-from views.posts import get_single_post  # ✅ ADDED IMPORT
-from views import (
-    login_user,
-    get_categories,
-    get_tags,
-    post_post,
-    create_category,
-    get_user_posts,
-    create_user,
-    get_posts,
-)
-from views.register import handle_register
-import json
+from views.posts import get_single_post, get_user_posts, get_posts
+from views import create_user
 
 
 class JSONServer(HandleRequests):
+    """HTTP server for Rare Python API with routes for users, posts, categories, and tags"""
 
     def do_GET(self):
         response_body = ""
         url = self.parse_url(self.path)
 
         if url["requested_resource"] == "users":
-            print(url)
             query_params = url["query_params"]
             if "username" in query_params and "password" in query_params:
                 credentials = {
@@ -41,25 +30,19 @@ class JSONServer(HandleRequests):
         elif url["requested_resource"] == "tags":
             response_body = get_tags()
             return self.response(response_body, status.HTTP_200_SUCCESS.value)
-            print(url)
 
-        # ✅ ADDED: GET SINGLE POST BY ID
         elif url["requested_resource"] == "posts":
-            if url["pk"] is not None:
+            if url.get("pk") is not None:
                 response_body = get_single_post(url["pk"])
                 return self.response(response_body, status.HTTP_200_SUCCESS.value)
-        elif url["requested_resource"] == "posts":
-            print(url)
-            query_params = url["query_params"]
-            dict_list = query_params.values()
-            list_of_values = list(dict_list)
-            if "user_id" in query_params:
-                user = list_of_values[0]
-                response_body = get_user_posts(url, user[0])
-                return self.response(response_body, status.HTTP_200_SUCCESS.value)
             else:
-                response_body = get_posts(url)
-                return self.response(response_body, status.HTTP_200_SUCCESS.value)
+                query_params = url["query_params"]
+                if "user_id" in query_params:
+                    response_body = get_user_posts(url, query_params["user_id"][0])
+                    return self.response(response_body, status.HTTP_200_SUCCESS.value)
+                else:
+                    response_body = get_posts(url)
+                    return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
         return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
@@ -79,17 +62,13 @@ class JSONServer(HandleRequests):
             return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
 
         elif url["requested_resource"] == "categories":
-            content_length = int(self.headers.get("content-length", 0))
-            request_body = self.rfile.read(content_length)
-            request_data = json.loads(request_body)
-
-            if not request_data.get("name", "").strip():
+            if not request_body.get("name", "").strip():
                 return self.response(
                     json.dumps({"message": "Category name is required."}),
                     status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
                 )
             self.response(
-                create_category(request_data), status.HTTP_201_SUCCESS_CREATED.value
+                create_category(request_body), status.HTTP_201_SUCCESS_CREATED.value
             )
         else:
             self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)

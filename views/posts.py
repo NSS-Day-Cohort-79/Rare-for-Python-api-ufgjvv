@@ -49,25 +49,24 @@ def post_post(post):
 
 # --- FUNCTION ADDED FOR STEP 3 (VIEW POST DETAILS #5) ---
 def get_single_post(post_id):
-    """Retrieve a single post with all details for Post Details page"""
-
-
-def get_user_posts(post_data, user):
+    """Retrieve a single post with author and category info for Post Details page"""
     with sqlite3.connect("./db.sqlite3") as conn:
         conn.row_factory = sqlite3.Row
         db_cursor = conn.cursor()
 
         db_cursor.execute(
             """
-        SELECT 
+        SELECT
             p.id,
             p.title,
             p.content,
             p.publication_date,
             p.image_url,
-            u.username AS author
-        FROM Posts p
-        JOIN Users u ON u.id = p.user_id
+            u.first_name || ' ' || u.last_name AS full_name,
+            c.label AS category
+        FROM posts p
+        JOIN users u ON p.user_id = u.id
+        JOIN categories c ON p.category_id = c.id
         WHERE p.id = ?
         """,
             (post_id,),
@@ -78,48 +77,37 @@ def get_user_posts(post_data, user):
         if post is None:
             return json.dumps({"error": "Post not found"})
 
-        # Convert row to dict
-        post_dict = {
-            "id": post["id"],
-            "title": post["title"],
-            "content": post["content"],
-            "publication_date": post["publication_date"],
-            "image_url": post["image_url"],
-            "author": post["author"],
-        }
+        return json.dumps(dict(post))
 
-        return json.dumps(post_dict)
-        if post_data:
-            if user:
-                db_cursor.execute(
-                    """
-                SELECT
-                    p.id,
-                    p.title,
-                    p.publication_date,
-                    p.image_url,
-                    u.first_name,
-                    u.last_name,
-                    c.label
-                FROM posts p
-                JOIN users u ON p.user_id = u.id
-                JOIN categories c ON p.category_id = c.id
-                WHERE p.user_id = ?
-                ORDER BY p.id DESC
-                """,
-                    (user,),
-                )
-                query_results = db_cursor.fetchall()
-        else:
-            pass
 
-        posts = []
-        for row in query_results:
-            posts.append(dict(row))
+def get_user_posts(post_data, user_id):
+    with sqlite3.connect("./db.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
 
-        serialized_posts = json.dumps(posts)
+        db_cursor.execute(
+            """
+        SELECT
+            p.id,
+            p.title,
+            p.publication_date,
+            p.image_url,
+            u.first_name,
+            u.last_name,
+            c.label
+        FROM posts p
+        JOIN users u ON p.user_id = u.id
+        JOIN categories c ON p.category_id = c.id
+        WHERE p.user_id = ?
+        ORDER BY p.id DESC
+        """,
+            (user_id,),
+        )
 
-    return serialized_posts
+        query_results = db_cursor.fetchall()
+
+        posts = [dict(row) for row in query_results]
+        return json.dumps(posts)
 
 
 def get_posts(post_data):
@@ -127,31 +115,24 @@ def get_posts(post_data):
         conn.row_factory = sqlite3.Row
         db_cursor = conn.cursor()
 
-        if post_data:
-            db_cursor.execute(
-                """
-                SELECT
-                    p.id,
-                    p.title,
-                    p.publication_date,
-                    p.image_url,
-                    u.first_name,
-                    u.last_name,
-                    c.label
-                FROM posts p
-                JOIN users u ON p.user_id = u.id
-                JOIN categories c ON p.category_id = c.id
-                ORDER BY p.id DESC
-                """
-            )
-            query_results = db_cursor.fetchall()
-        else:
-            pass
+        db_cursor.execute(
+            """
+        SELECT
+            p.id,
+            p.title,
+            p.publication_date,
+            p.image_url,
+            u.first_name,
+            u.last_name,
+            c.label
+        FROM posts p
+        JOIN users u ON p.user_id = u.id
+        JOIN categories c ON p.category_id = c.id
+        ORDER BY p.id DESC
+        """
+        )
 
-        posts = []
-        for row in query_results:
-            posts.append(dict(row))
+        query_results = db_cursor.fetchall()
+        posts = [dict(row) for row in query_results]
 
-        serialized_posts = json.dumps(posts)
-
-    return serialized_posts
+        return json.dumps(posts)
