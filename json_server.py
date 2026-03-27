@@ -1,5 +1,6 @@
 from http.server import HTTPServer
 import json
+from models.tag import create_tag
 from views import (
     login_user,
     get_categories,
@@ -10,10 +11,10 @@ from views import (
     create_user,
     get_posts,
 )
-import nss_handler
+from nss_handler import HandleRequests, status
 
 
-class JSONServer(nss_handler.HandleRequests):
+class JSONServer(HandleRequests):
 
     def do_GET(self):
         url = self.parse_url(self.path)
@@ -27,21 +28,15 @@ class JSONServer(nss_handler.HandleRequests):
                     "password": query_params["password"][0],
                 }
                 response_body = login_user(credentials)
-                return self.response(
-                    response_body, nss_handler.status.HTTP_200_SUCCESS.value
-                )
+                return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
         elif url["requested_resource"] == "categories":
             response_body = get_categories()
-            return self.response(
-                response_body, nss_handler.status.HTTP_200_SUCCESS.value
-            )
+            return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
         elif url["requested_resource"] == "tags":
             response_body = get_tags()
-            return self.response(
-                json.dumps(response_body), nss_handler.status.HTTP_200_SUCCESS.value
-            )
+            return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
         elif url["requested_resource"] == "posts":
             print(url)
@@ -51,17 +46,14 @@ class JSONServer(nss_handler.HandleRequests):
             if "user_id" in query_params:
                 user = list_of_values[0]
                 response_body = get_user_posts(url, user[0])
-                return self.response(
-                    response_body, nss_handler.status.HTTP_200_SUCCESS.value
-                )
+                return self.response(response_body, status.HTTP_200_SUCCESS.value)
             else:
                 response_body = get_posts(url)
-                return self.response(
-                    response_body, nss_handler.status.HTTP_200_SUCCESS.value
-                )
+                return self.response(response_body, status.HTTP_200_SUCCESS.value)
 
         return self.response(
-            "", nss_handler.status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value
+            {"message": "Not Found"},
+            status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value,
         )
 
     def do_POST(self):
@@ -71,42 +63,37 @@ class JSONServer(nss_handler.HandleRequests):
         request_body = self.rfile.read(content_len)
         request_body = json.loads(request_body)
 
-        # ✅ REGISTER
         if url["requested_resource"] == "register":
             response_body = create_user(request_body)
-            return self.response(
-                response_body, nss_handler.status.HTTP_201_SUCCESS_CREATED.value
-            )
+            return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
 
-        # ✅ POSTS
         elif url["requested_resource"] == "posts":
             response_body = post_post(request_body)
-            return self.response(
-                response_body, nss_handler.status.HTTP_201_SUCCESS_CREATED.value
-            )
+            return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
 
         elif url["requested_resource"] == "categories":
-            content_length = int(self.headers.get("content-length", 0))
-            request_body = self.rfile.read(content_length)
-            request_data = json.loads(request_body)
+            response_body = create_category(request_body)
+            return self.response(response_body, status.HTTP_201_SUCCESS_CREATED.value)
 
         elif url["requested_resource"] == "tags":
-            content_length = int(self.headers.get("content-length", 0))
-            request_body = self.rfile.read(content_length)
-            request_data = json.loads(request_body)
 
-            if not request_data.get("label", "").strip():
+            if not request_body.get("label", "").strip():
                 return self.response(
-                    json.dumps({"message": "Tag label is required."}),
-                    nss_handler.status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
+                    {"message": "Tag label is required."},
+                    status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
                 )
-            self.response(
-                create_category(request_data),
-                nss_handler.status.HTTP_201_SUCCESS_CREATED.value,
+
+            response_body = create_tag(request_body)
+
+            return self.response(
+                response_body,
+                status.HTTP_201_SUCCESS_CREATED.value,
             )
+
         else:
             return self.response(
-                "", nss_handler.status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value
+                {"message": "Not Found"},
+                status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value,
             )
 
 
