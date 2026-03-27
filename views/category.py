@@ -20,8 +20,27 @@ def get_categories():
         # Serialize Python list to JSON encoded string
         serialized_categories = json.dumps(categories)
         return serialized_categories
-import sqlite3 
-import json
+
+def get_category(pk):
+    with sqlite3.connect('./db.sqlite3') as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+            SELECT
+                id,
+                label
+            FROM categories
+            WHERE id = ?
+        """, (pk,))
+
+        query_result = db_cursor.fetchone()
+
+        if query_result is None:
+            return json.dumps(None)
+
+        return json.dumps(dict(query_result))
+
 
 def create_category(category):
     """Adds a new category to the database
@@ -38,11 +57,40 @@ def create_category(category):
  
         db_cursor.execute("""
             INSERT INTO Categories (label) VALUES (?)
-        """, (category['name'],))
+        """, (category['label'],))
  
         id = db_cursor.lastrowid
  
         return json.dumps({
             'id': id,
-            'label': category['name']
+            'label': category['label']
         })
+
+def update_category(category):
+    with sqlite3.connect('./db.sqlite3') as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE categories
+        SET label = ?
+        WHERE id = ?
+        """, (category["label"], category["id"],))
+
+        conn.commit()
+
+        return json.dumps({"success": True})
+
+def delete_category(id):
+    with sqlite3.connect('./db.sqlite3') as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        DELETE FROM categories
+        WHERE id = ?
+        """, (id,))
+
+        conn.commit()
+
+        return json.dumps({"success": True})
