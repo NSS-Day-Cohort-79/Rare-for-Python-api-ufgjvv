@@ -1,4 +1,4 @@
-"""JSONServer for Rare Python API
+"""JSONServer for Rare Python API.
 
 HTTP server with routes for users, posts, categories, and tags.
 Handles GET, POST, PUT, DELETE requests.
@@ -15,11 +15,12 @@ from views import (
     get_user_posts,
     create_user,
     get_posts,
-    update_category,
     get_category,
+    update_category,
     delete_category,
 )
 from views.posts import get_single_post  # For Post Details (Ticket #5)
+from views.tags import create_tag
 from nss_handler import HandleRequests, status
 
 
@@ -32,14 +33,14 @@ class JSONServer(HandleRequests):
 
         if url["requested_resource"] == "users":
             query_params = url["query_params"]
-
             if "username" in query_params and "password" in query_params:
                 credentials = {
                     "username": query_params["username"][0],
                     "password": query_params["password"][0],
                 }
-                response_body = login_user(credentials)
-                return self.response(response_body, status.HTTP_200_SUCCESS.value)
+                return self.response(
+                    login_user(credentials), status.HTTP_200_SUCCESS.value
+                )
 
         elif url["requested_resource"] == "categories":
             query_params = url["query_params"]
@@ -56,25 +57,25 @@ class JSONServer(HandleRequests):
                 return self.response(
                     get_single_post(url["pk"]), status.HTTP_200_SUCCESS.value
                 )
-            else:
-                query_params = url["query_params"]
-                if "user_id" in query_params:
-                    return self.response(
-                        get_user_posts(query_params["user_id"][0]),
-                        status.HTTP_200_SUCCESS.value,
-                    )
-                else:
-                    return self.response(get_posts(None), status.HTTP_200_SUCCESS.value)
+            query_params = url["query_params"]
+            if "user_id" in query_params:
+                return self.response(
+                    get_user_posts(query_params["user_id"][0]),
+                    status.HTTP_200_SUCCESS.value,
+                )
+            return self.response(get_posts(None), status.HTTP_200_SUCCESS.value)
 
-        return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
+        return self.response(
+            {"message": "Not Found"},
+            status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value,
+        )
 
     def do_POST(self):  # noqa: N802
         """Handle POST requests"""
         url = self.parse_url(self.path)
 
         content_len = int(self.headers.get("content-length", 0))
-        request_body = self.rfile.read(content_len)
-        request_body = json.loads(request_body)
+        request_body = json.loads(self.rfile.read(content_len))
 
         if url["requested_resource"] == "register":
             return self.response(
@@ -87,48 +88,62 @@ class JSONServer(HandleRequests):
             )
 
         elif url["requested_resource"] == "categories":
-            if not request_body.get("label", "").strip():
-                return self.response(
-                    json.dumps({"message": "Category label is required."}),
-                    status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
-                )
             return self.response(
                 create_category(request_body), status.HTTP_201_SUCCESS_CREATED.value
             )
 
-        return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
+        elif url["requested_resource"] == "tags":
+            if not request_body.get("label", "").strip():
+                return self.response(
+                    {"message": "Tag label is required."},
+                    status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
+                )
+            return self.response(
+                create_tag(request_body), status.HTTP_201_SUCCESS_CREATED.value
+            )
+
+        return self.response(
+            {"message": "Not Found"},
+            status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value,
+        )
 
     def do_PUT(self):  # noqa: N802
         """Handle PUT requests"""
         url = self.parse_url(self.path)
-
         content_len = int(self.headers.get("content-length", 0))
-        request_body = self.rfile.read(content_len)
-        request_body = json.loads(request_body)
+        request_body = json.loads(self.rfile.read(content_len))
 
         if url["requested_resource"] == "categories":
             if not request_body.get("label", "").strip():
                 return self.response(
-                    json.dumps({"message": "Category label is required."}),
+                    {"message": "Category label is required."},
                     status.HTTP_400_CLIENT_ERROR_BAD_REQUEST_DATA.value,
                 )
             return self.response(
                 update_category(request_body), status.HTTP_200_SUCCESS.value
             )
 
-        return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
+        return self.response(
+            {"message": "Not Found"},
+            status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value,
+        )
 
     def do_DELETE(self):  # noqa: N802
         """Handle DELETE requests"""
         url = self.parse_url(self.path)
         pk = url.get("pk")
 
-        if url["requested_resource"] == "categories" and pk is not None:
-            successfully_deleted = delete_category(pk)
-            if successfully_deleted:
-                return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
+        if url["requested_resource"] == "categories":
+            if pk is not None and pk != 0:
+                if delete_category(pk):
+                    return self.response(
+                        "", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value
+                    )
 
-        return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
+        return self.response(
+            {"message": "Not Found"},
+            status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value,
+        )
 
 
 def main():

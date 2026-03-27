@@ -1,3 +1,8 @@
+"""Posts module for Rare Python API.
+
+Handles creating posts, retrieving single posts, all posts, and user-specific posts.
+"""
+
 import sqlite3
 import json
 from datetime import datetime
@@ -11,15 +16,15 @@ def post_post(post):
 
         db_cursor.execute(
             """
-        INSERT INTO Posts (user_id, category_id, title, publication_date, image_url, content, approved)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        """,
+            INSERT INTO Posts (user_id, category_id, title, publication_date, image_url, content, approved)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
             (
                 post["user_id"],
                 post["category_id"],
                 post["title"],
                 datetime.now(),
-                post["image_url"],
+                post.get("image_url"),
                 post["content"],
                 post["approved"],
             ),
@@ -49,19 +54,19 @@ def get_single_post(post_id):
 
         db_cursor.execute(
             """
-        SELECT
-            p.id,
-            p.title,
-            p.content,
-            p.publication_date,
-            p.image_url,
-            u.first_name || ' ' || u.last_name AS full_name,
-            c.label AS category
-        FROM Posts p
-        JOIN Users u ON p.user_id = u.id
-        JOIN Categories c ON p.category_id = c.id
-        WHERE p.id = ?
-        """,
+            SELECT
+                p.id,
+                p.title,
+                p.content,
+                p.publication_date,
+                p.image_url,
+                u.first_name || ' ' || u.last_name AS full_name,
+                c.label AS category
+            FROM Posts p
+            JOIN Users u ON p.user_id = u.id
+            JOIN Categories c ON p.category_id = c.id
+            WHERE p.id = ?
+            """,
             (post_id,),
         )
 
@@ -80,26 +85,26 @@ def get_user_posts(user_id):
 
         db_cursor.execute(
             """
-        SELECT
-            p.id,
-            p.title,
-            p.publication_date,
-            p.image_url,
-            u.first_name,
-            u.last_name,
-            c.label AS category
-        FROM Posts p
-        JOIN Users u ON p.user_id = u.id
-        JOIN Categories c ON p.category_id = c.id
-        WHERE p.user_id = ?
-        ORDER BY p.id DESC
-        """,
+            SELECT
+                p.id,
+                p.title,
+                p.publication_date,
+                p.image_url,
+                u.first_name,
+                u.last_name,
+                c.label
+            FROM Posts p
+            JOIN Users u ON p.user_id = u.id
+            JOIN Categories c ON p.category_id = c.id
+            WHERE p.user_id = ?
+            ORDER BY p.id DESC
+            """,
             (user_id,),
         )
-
         query_results = db_cursor.fetchall()
         posts = [dict(row) for row in query_results]
-        return json.dumps(posts)
+
+    return json.dumps(posts)
 
 
 def get_posts(_unused=None):
@@ -110,22 +115,22 @@ def get_posts(_unused=None):
 
         db_cursor.execute(
             """
-        SELECT
-            p.id,
-            p.title,
-            p.publication_date,
-            p.image_url,
-            u.first_name,
-            u.last_name,
-            c.label AS category
-        FROM Posts p
-        JOIN Users u ON p.user_id = u.id
-        JOIN Categories c ON p.category_id = c.id
-        ORDER BY p.id DESC
-        """
+            SELECT
+                p.id,
+                p.title,
+                p.publication_date,
+                p.image_url,
+                u.first_name,
+                u.last_name,
+                c.label AS category
+            FROM Posts p
+            JOIN Users u ON p.user_id = u.id
+            JOIN Categories c ON p.category_id = c.id
+            ORDER BY p.id DESC
+            """
         )
 
         query_results = db_cursor.fetchall()
         posts = [dict(row) for row in query_results]
 
-        return json.dumps(posts)
+    return json.dumps(posts)
