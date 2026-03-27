@@ -1,7 +1,7 @@
 from http.server import HTTPServer
 from nss_handler import HandleRequests, status
 import json
-from views import login_user, get_categories, get_tags, post_post, create_category, get_user_posts, create_user, update_post, get_single_post
+from views import login_user, get_categories, get_tags, post_post, create_category, get_user_posts, create_user, update_post, get_single_post, delete_post
 from views.register import handle_register
 import json
 
@@ -90,6 +90,16 @@ class JSONServer(HandleRequests):
         if url["requested_resource"] == "posts":
             response_body = update_post(url["pk"], request_body)
             return self.response(response_body, status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
+        else:
+            return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
+        
+    def do_DELETE(self):
+        print("DELETE method called")
+        url = self.parse_url(self.path)
+
+        if url["requested_resource"] == "posts":
+            delete_post(url["pk"])
+            return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
         else:
             return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
