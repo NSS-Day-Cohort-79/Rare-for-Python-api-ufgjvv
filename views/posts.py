@@ -84,13 +84,15 @@ def get_user_posts(post_data, user):
 
     return serialized_posts
 
+
 def get_posts(post_data):
     with sqlite3.connect("./db.sqlite3") as conn:
         conn.row_factory = sqlite3.Row
         db_cursor = conn.cursor()
 
         if post_data:
-                db_cursor.execute("""
+            db_cursor.execute(
+                """
                 SELECT
                     p.id,
                     p.title,
@@ -103,8 +105,9 @@ def get_posts(post_data):
                 JOIN users u ON p.user_id = u.id
                 JOIN categories c ON p.category_id = c.id
                 ORDER BY p.id DESC
-                """)
-                query_results = db_cursor.fetchall()
+                """
+            )
+            query_results = db_cursor.fetchall()
         else:
             pass
 
@@ -115,4 +118,3 @@ def get_posts(post_data):
         serialized_posts = json.dumps(posts)
 
     return serialized_posts
-
